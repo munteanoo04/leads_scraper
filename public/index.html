@@ -6,24 +6,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root {
-      --bg: #ffffff;
-      --bg2: #f8f8f7;
-      --bg3: #f1f0eb;
-      --text: #1a1a18;
-      --text2: #6b6a64;
-      --text3: #9b9a94;
-      --border: rgba(0,0,0,0.1);
-      --border2: rgba(0,0,0,0.18);
-      --blue-bg: #e6f1fb;
-      --blue-text: #185fa5;
-      --green-bg: #eaf3de;
-      --green-text: #3b6d11;
-      --red-bg: #fcebeb;
-      --red-text: #a32d2d;
-      --orange-bg: #faeeda;
-      --orange-text: #854f0b;
-      --gray-bg: #f1efe8;
-      --gray-text: #5f5e5a;
+      --bg: #171a1f;
+      --bg2: #121418;
+      --bg3: #1e232b;
+      --text: #f1f5f9;
+      --text2: #cbd5e1;
+      --text3: #94a3b8;
+      --border: rgba(255,255,255,0.12);
+      --border2: rgba(255,255,255,0.2);
+      --blue-bg: #10273d;
+      --blue-text: #7dc3ff;
+      --green-bg: #14321f;
+      --green-text: #7de2a8;
+      --red-bg: #3a1a1e;
+      --red-text: #ff9393;
+      --orange-bg: #3b2b15;
+      --orange-text: #ffcc80;
+      --gray-bg: #2a2f36;
+      --gray-text: #d5dbe3;
     }
     * { box-sizing: border-box; }
     body {
@@ -32,6 +32,7 @@
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       font-size: 14px;
+      font-weight: 500;
     }
     .app {
       display: grid;
@@ -193,6 +194,7 @@
       font-size: 11px;
       color: var(--text3);
       margin-bottom: 2px;
+      font-weight: 400;
     }
     .field-value {
       font-size: 13px;
@@ -240,7 +242,9 @@
     textarea {
       min-height: 70px;
       resize: vertical;
+      color: var(--text);
     }
+    textarea::placeholder { color: var(--text3); }
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -292,6 +296,39 @@
     .toast.error {
       background: var(--red-bg);
       color: var(--red-text);
+    }
+    .resunat-grid {
+      display: grid;
+      grid-template-columns: 110px minmax(0, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+      align-items: center;
+    }
+    .res-label {
+      color: var(--text2);
+      font-size: 12px;
+    }
+    .time-slots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .time-btn {
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 6px;
+      background: var(--gray-bg);
+      color: var(--gray-text);
+    }
+    .time-btn.active {
+      border: 1px solid var(--orange-text);
+      color: var(--orange-text);
+      background: var(--orange-bg);
+    }
+    .res-preview {
+      margin-top: 8px;
+      color: var(--orange-text);
+      font-size: 12px;
     }
     a {
       color: var(--blue-text);
@@ -406,20 +443,30 @@
             </div>
             <div id="resunatInputs" style="display:none;">
               <div class="field-label">Detalii re-sunat</div>
-              <div class="inputs-row">
+              <div class="resunat-grid">
+                <div class="res-label">Data</div>
                 <input id="resunatDate" type="date" />
+                <div class="res-label">Ora rapidă</div>
+                <div class="time-slots">
+                  <button class="time-btn" data-time="09:00">09:00</button>
+                  <button class="time-btn" data-time="10:00">10:00</button>
+                  <button class="time-btn" data-time="11:00">11:00</button>
+                  <button class="time-btn" data-time="12:00">12:00</button>
+                  <button class="time-btn" data-time="14:00">14:00</button>
+                  <button class="time-btn" data-time="16:00">16:00</button>
+                  <button class="time-btn" data-time="18:00">18:00</button>
+                </div>
+                <div class="res-label">Ora custom</div>
                 <input id="resunatTime" type="time" />
               </div>
-            </div>
-            <div style="margin-top:8px;display:flex;justify-content:flex-end;gap:8px;">
-              <button id="saveStatusBtn">Save</button>
+              <div id="resunatPreview" class="res-preview"></div>
             </div>
           </div>
           <div class="card full">
             <div class="card-title">Notă personală</div>
             <textarea id="notaTextarea" placeholder="Notează detalii utile pentru următoarea discuție..."></textarea>
-            <div style="margin-top:8px;display:flex;justify-content:flex-end;">
-              <button id="saveNotaBtn">Save</button>
+            <div style="margin-top:8px;display:flex;justify-content:flex-end;gap:8px;">
+              <button id="saveLeadBtn">Save</button>
             </div>
           </div>
         </div>
@@ -436,6 +483,7 @@
       searchTerm: '',
       isSaving: false
     };
+    const STORAGE_KEY = 'crm_lead_context_v1';
 
     const els = {
       companyName: document.getElementById('companyName'),
@@ -458,9 +506,10 @@
       resunatInputs: document.getElementById('resunatInputs'),
       resunatDate: document.getElementById('resunatDate'),
       resunatTime: document.getElementById('resunatTime'),
-      saveStatusBtn: document.getElementById('saveStatusBtn'),
+      resunatPreview: document.getElementById('resunatPreview'),
+      quickTimeButtons: Array.from(document.querySelectorAll('.time-btn')),
       notaTextarea: document.getElementById('notaTextarea'),
-      saveNotaBtn: document.getElementById('saveNotaBtn'),
+      saveLeadBtn: document.getElementById('saveLeadBtn'),
       toastContainer: document.getElementById('toastContainer'),
       counts: {
         de_resunat: document.getElementById('count_de_resunat'),
@@ -519,6 +568,48 @@
         btn.classList.toggle('active', s === status);
       });
       els.resunatInputs.style.display = status === 'de_resunat' ? 'block' : 'none';
+      if (status === 'de_resunat' && !els.resunatDate.value) {
+        els.resunatDate.value = new Date().toISOString().slice(0, 10);
+      }
+      updateResunatPreview();
+    }
+
+    function setQuickTimeActive(timeValue) {
+      els.quickTimeButtons.forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.time === timeValue);
+      });
+    }
+
+    function updateResunatPreview() {
+      const statusBtn = els.statusButtons.find((b) => b.classList.contains('active'));
+      const status = statusBtn ? statusBtn.getAttribute('data-status') : '';
+      if (status !== 'de_resunat') {
+        els.resunatPreview.textContent = '';
+        return;
+      }
+      const d = els.resunatDate.value || 'fără dată';
+      const t = els.resunatTime.value || 'fără oră';
+      els.resunatPreview.textContent = `Programat pentru re-sunat: ${d} la ${t}`;
+    }
+
+    function saveContext() {
+      if (!state.filteredLeads.length) return;
+      const lead = state.filteredLeads[state.index];
+      const payload = {
+        leadId: lead.id,
+        statusFilter: state.currentStatusFilter,
+        searchTerm: state.searchTerm || ''
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }
+
+    function loadContext() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (_e) {
+        return null;
+      }
     }
 
     function renderCurrentLead() {
@@ -608,10 +699,14 @@
       if (lead.status === 'de_resunat') {
         els.resunatDate.value = lead.resunat_data || '';
         els.resunatTime.value = lead.resunat_ora || '';
+        setQuickTimeActive(lead.resunat_ora || '');
       } else {
         els.resunatDate.value = '';
         els.resunatTime.value = '';
+        setQuickTimeActive('');
       }
+      updateResunatPreview();
+      saveContext();
     }
 
     function decorateComentariu(text) {
@@ -636,18 +731,44 @@
       }
     }
 
-    async function fetchLeads(initialStatus) {
-      const params = new URLSearchParams();
-      if (initialStatus && initialStatus !== 'all') params.set('status', initialStatus);
+    async function fetchAllLeads() {
       try {
-        const res = await fetch('/api/leads?' + params.toString());
-        if (!res.ok) throw new Error('Răspuns invalid');
-        const json = await res.json();
-        state.leads = json.items || [];
-        state.currentStatusFilter = initialStatus || 'all';
+        const all = [];
+        const limit = 200;
+        let page = 1;
+        let total = null;
+
+        while (total === null || all.length < total) {
+          const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+          const res = await fetch('/api/leads?' + params.toString());
+          if (!res.ok) throw new Error('Răspuns invalid');
+          const json = await res.json();
+          const items = json.items || [];
+          total = json.total || 0;
+          all.push(...items);
+          if (!items.length) break;
+          page += 1;
+        }
+
+        state.leads = all;
+        const stored = loadContext();
+        state.currentStatusFilter = (stored && stored.statusFilter) || 'all';
+        state.searchTerm = (stored && stored.searchTerm) || '';
+        els.searchInput.value = state.searchTerm;
+        els.navItems.forEach((i) => i.classList.remove('active'));
+        const activeNav = els.navItems.find((i) => i.getAttribute('data-status') === state.currentStatusFilter)
+          || els.navItems.find((i) => i.getAttribute('data-status') === 'all');
+        if (activeNav) activeNav.classList.add('active');
         state.filteredLeads = state.leads.slice();
         state.index = 0;
         filterLeads();
+        if (stored && stored.leadId) {
+          const idx = state.filteredLeads.findIndex((l) => l.id === stored.leadId);
+          if (idx >= 0) {
+            state.index = idx;
+            renderCurrentLead();
+          }
+        }
       } catch (e) {
         showToast('Nu s-au putut încărca lead-urile', true);
       }
@@ -661,57 +782,51 @@
       renderCurrentLead();
     }
 
-    async function saveStatus(status) {
+    async function saveLead() {
       if (!state.filteredLeads.length || state.isSaving) return;
       const lead = state.filteredLeads[state.index];
-      const body = { status };
+      const active = els.statusButtons.find((b) => b.classList.contains('active'));
+      const status = active ? active.getAttribute('data-status') : lead.status;
+      const statusBody = { status };
       if (status === 'de_resunat') {
-        body.resunat_data = els.resunatDate.value || null;
-        body.resunat_ora = els.resunatTime.value || null;
+        statusBody.resunat_data = els.resunatDate.value || null;
+        statusBody.resunat_ora = els.resunatTime.value || null;
       }
+      const notaBody = { nota: els.notaTextarea.value || null };
+
       state.isSaving = true;
       try {
-        const res = await fetch('/api/leads/' + lead.id + '/status', {
+        const statusRes = await fetch('/api/leads/' + lead.id + '/status', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
+          body: JSON.stringify(statusBody)
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Eroare la salvare');
+
+        const notaRes = await fetch('/api/leads/' + lead.id + '/nota', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(notaBody)
+        });
+
+        const statusData = await statusRes.json();
+        const notaData = await notaRes.json();
+        if (!statusRes.ok) throw new Error(statusData.error || 'Eroare la salvare status');
+        if (!notaRes.ok) throw new Error(notaData.error || 'Eroare la salvare notă');
+
+        const data = { ...statusData, nota: notaData.nota };
         const idxGlobal = state.leads.findIndex((l) => l.id === lead.id);
         if (idxGlobal !== -1) state.leads[idxGlobal] = data;
         state.filteredLeads[state.index] = data;
         setStatusActive(data.status);
-        showToast('Status salvat ✓', false);
+        showToast('Lead salvat ✓', false);
         fetchStats();
         setTimeout(() => {
           goto(1);
         }, 800);
       } catch (e) {
-        showToast(e.message || 'Nu s-a putut salva statusul', true);
+        showToast(e.message || 'Nu s-a putut salva lead-ul', true);
       } finally {
         state.isSaving = false;
-      }
-    }
-
-    async function saveNota() {
-      if (!state.filteredLeads.length) return;
-      const lead = state.filteredLeads[state.index];
-      const body = { nota: els.notaTextarea.value || null };
-      try {
-        const res = await fetch('/api/leads/' + lead.id + '/nota', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Eroare la salvare');
-        const idxGlobal = state.leads.findIndex((l) => l.id === lead.id);
-        if (idxGlobal !== -1) state.leads[idxGlobal] = data;
-        state.filteredLeads[state.index] = data;
-        showToast('Notă salvată ✓', false);
-      } catch (e) {
-        showToast(e.message || 'Nu s-a putut salva nota', true);
       }
     }
 
@@ -725,6 +840,7 @@
         state.searchTerm = els.searchInput.value;
         searchTimeout = setTimeout(() => {
           filterLeads();
+          saveContext();
         }, 300);
       });
 
@@ -733,7 +849,10 @@
           els.navItems.forEach((i) => i.classList.remove('active'));
           item.classList.add('active');
           const status = item.getAttribute('data-status');
-          fetchLeads(status);
+          state.currentStatusFilter = status;
+          state.index = 0;
+          filterLeads();
+          saveContext();
         });
       });
       const defaultNav = els.navItems.find((i) => i.getAttribute('data-status') === 'all');
@@ -745,16 +864,22 @@
           setStatusActive(s);
         });
       });
-
-      els.saveStatusBtn.addEventListener('click', () => {
-        const active = els.statusButtons.find((b) => b.classList.contains('active'));
-        const s = active ? active.getAttribute('data-status') : null;
-        if (!s) return;
-        saveStatus(s);
+      els.resunatDate.addEventListener('change', updateResunatPreview);
+      els.resunatTime.addEventListener('change', () => {
+        setQuickTimeActive(els.resunatTime.value);
+        updateResunatPreview();
+      });
+      els.quickTimeButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const time = btn.dataset.time;
+          els.resunatTime.value = time;
+          setQuickTimeActive(time);
+          updateResunatPreview();
+        });
       });
 
-      els.saveNotaBtn.addEventListener('click', () => {
-        saveNota();
+      els.saveLeadBtn.addEventListener('click', () => {
+        saveLead();
       });
 
       document.addEventListener('keydown', (e) => {
@@ -771,7 +896,6 @@
           };
           const s = map[e.key];
           setStatusActive(s);
-          saveStatus(s);
         }
       });
     }
@@ -779,7 +903,7 @@
     (function init() {
       initEvents();
       fetchStats();
-      fetchLeads('all');
+      fetchAllLeads();
     })();
   </script>
 </body>
