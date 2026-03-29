@@ -238,6 +238,7 @@
       width: 100%;
       font-family: inherit;
       background: var(--bg2);
+      color: var(--text);
     }
     textarea {
       min-height: 70px;
@@ -308,6 +309,37 @@
       color: var(--text2);
       font-size: 12px;
     }
+    .res-preview {
+      margin-top: 8px;
+      color: var(--orange-text);
+      font-size: 12px;
+    }
+    .quote-box {
+      margin-top: 12px;
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg3);
+      padding: 10px;
+    }
+    .quote-title {
+      font-size: 12px;
+      color: var(--text3);
+      margin-bottom: 6px;
+    }
+    .quote-text {
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+    .quote-image {
+      width: 100%;
+      border-radius: 8px;
+      border: 0.5px solid var(--border2);
+      display: block;
+      object-fit: cover;
+      max-height: 230px;
+    }
     .time-slots {
       display: flex;
       flex-wrap: wrap;
@@ -324,11 +356,6 @@
       border: 1px solid var(--orange-text);
       color: var(--orange-text);
       background: var(--orange-bg);
-    }
-    .res-preview {
-      margin-top: 8px;
-      color: var(--orange-text);
-      font-size: 12px;
     }
     a {
       color: var(--blue-text);
@@ -437,26 +464,29 @@
           <div class="card full">
             <div class="card-title">Status</div>
             <div class="status-buttons">
-              <button class="status-btn status-de_resunat" data-status="de_resunat">Re-sunat (1)</button>
-              <button class="status-btn status-acceptat" data-status="acceptat">Acceptat (2)</button>
-              <button class="status-btn status-refuzat" data-status="refuzat">Refuzat (3)</button>
+              <button class="status-btn status-de_resunat" data-status="de_resunat">Re-sunat</button>
+              <button class="status-btn status-acceptat" data-status="acceptat">Acceptat</button>
+              <button class="status-btn status-refuzat" data-status="refuzat">Refuzat</button>
             </div>
             <div id="resunatInputs" style="display:none;">
               <div class="field-label">Detalii re-sunat</div>
               <div class="resunat-grid">
                 <div class="res-label">Data</div>
                 <input id="resunatDate" type="date" />
-                <div class="res-label">Ora rapidă</div>
+                <div class="res-label">Oră fixă</div>
                 <div class="time-slots">
                   <button class="time-btn" data-time="09:00">09:00</button>
                   <button class="time-btn" data-time="10:00">10:00</button>
                   <button class="time-btn" data-time="11:00">11:00</button>
                   <button class="time-btn" data-time="12:00">12:00</button>
+                  <button class="time-btn" data-time="13:00">13:00</button>
                   <button class="time-btn" data-time="14:00">14:00</button>
+                  <button class="time-btn" data-time="15:00">15:00</button>
                   <button class="time-btn" data-time="16:00">16:00</button>
+                  <button class="time-btn" data-time="17:00">17:00</button>
                   <button class="time-btn" data-time="18:00">18:00</button>
                 </div>
-                <div class="res-label">Ora custom</div>
+                <div class="res-label">Ora</div>
                 <input id="resunatTime" type="time" />
               </div>
               <div id="resunatPreview" class="res-preview"></div>
@@ -467,6 +497,11 @@
             <textarea id="notaTextarea" placeholder="Notează detalii utile pentru următoarea discuție..."></textarea>
             <div style="margin-top:8px;display:flex;justify-content:flex-end;gap:8px;">
               <button id="saveLeadBtn">Save</button>
+            </div>
+            <div class="quote-box">
+              <div class="quote-title">Citat personal</div>
+              <div class="quote-text">"Tu gândești luni. Eu gândesc 5 minute și execut."</div>
+              <img class="quote-image" src="/citat-personal.png" alt="Citat personal" onerror="this.style.display='none'" />
             </div>
           </div>
         </div>
@@ -574,12 +609,6 @@
       updateResunatPreview();
     }
 
-    function setQuickTimeActive(timeValue) {
-      els.quickTimeButtons.forEach((btn) => {
-        btn.classList.toggle('active', btn.dataset.time === timeValue);
-      });
-    }
-
     function updateResunatPreview() {
       const statusBtn = els.statusButtons.find((b) => b.classList.contains('active'));
       const status = statusBtn ? statusBtn.getAttribute('data-status') : '';
@@ -590,6 +619,12 @@
       const d = els.resunatDate.value || 'fără dată';
       const t = els.resunatTime.value || 'fără oră';
       els.resunatPreview.textContent = `Programat pentru re-sunat: ${d} la ${t}`;
+    }
+
+    function setQuickTimeActive(timeValue) {
+      els.quickTimeButtons.forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.time === timeValue);
+      });
     }
 
     function saveContext() {
@@ -888,14 +923,6 @@
           goto(-1);
         } else if (e.key === 'ArrowRight') {
           goto(1);
-        } else if (['1','2','3'].includes(e.key)) {
-          const map = {
-            '1': 'de_resunat',
-            '2': 'acceptat',
-            '3': 'refuzat'
-          };
-          const s = map[e.key];
-          setStatusActive(s);
         }
       });
     }
