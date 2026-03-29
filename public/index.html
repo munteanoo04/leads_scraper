@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <title>Leads CRM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg2: #f8f8f7;
+      --bg3: #f1f0eb;
+      --text: #1a1a18;
+      --text2: #6b6a64;
+      --text3: #9b9a94;
+      --border: rgba(0,0,0,0.1);
+      --border2: rgba(0,0,0,0.18);
+      --blue-bg: #e6f1fb;
+      --blue-text: #185fa5;
+      --green-bg: #eaf3de;
+      --green-text: #3b6d11;
+      --red-bg: #fcebeb;
+      --red-text: #a32d2d;
+      --orange-bg: #faeeda;
+      --orange-text: #854f0b;
+      --gray-bg: #f1efe8;
+      --gray-text: #5f5e5a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg2);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+    }
+    .app {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      height: 100vh;
+    }
+    .sidebar {
+      border-right: 0.5px solid var(--border);
+      background: var(--bg);
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .app-title {
+      font-weight: 500;
+      font-size: 18px;
+    }
+    .search-box {
+      background: var(--bg2);
+      border-radius: 4px;
+      border: 0.5px solid var(--border);
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .search-box input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 13px;
+    }
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text2);
+    }
+    .nav-item.active {
+      background: var(--bg3);
+      color: var(--text);
+      border: 0.5px solid var(--border2);
+    }
+    .badge {
+      min-width: 24px;
+      padding: 0 6px;
+      border-radius: 999px;
+      text-align: center;
+      font-size: 11px;
+      border: 0.5px solid var(--border);
+      background: var(--bg2);
+      color: var(--text2);
+    }
+    .badge-red { background: var(--red-bg); color: var(--red-text); }
+    .badge-orange { background: var(--orange-bg); color: var(--orange-text); }
+    .main {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .top-bar {
+      padding: 12px 16px;
+      border-bottom: 0.5px solid var(--border);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .top-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .company {
+      font-size: 18px;
+      font-weight: 500;
+    }
+    .address {
+      color: var(--text3);
+      font-size: 13px;
+    }
+    .top-tags {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .pill {
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      border: 0.5px solid var(--border2);
+      background: var(--bg2);
+      color: var(--text2);
+    }
+    .pill-blue { background: var(--blue-bg); color: var(--blue-text); }
+    .pill-orange { background: var(--orange-bg); color: var(--orange-text); }
+    .top-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    button {
+      border-radius: 6px;
+      border: 0.5px solid var(--border2);
+      background: var(--bg2);
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .pos-label {
+      color: var(--text3);
+      font-size: 12px;
+    }
+    .content {
+      padding: 12px 16px 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .card {
+      background: var(--bg);
+      border-radius: 8px;
+      border: 0.5px solid var(--border);
+      padding: 10px 12px;
+    }
+    .card.full {
+      grid-column: 1 / -1;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text2);
+    }
+    .field-label {
+      font-size: 11px;
+      color: var(--text3);
+      margin-bottom: 2px;
+    }
+    .field-value {
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .field-row {
+      margin-bottom: 4px;
+    }
+    .status-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .status-btn {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--gray-bg);
+      color: var(--gray-text);
+    }
+    .status-btn.active {
+      border-width: 2px;
+    }
+    .status-de_sunat.active { border-color: var(--red-text); background: var(--red-bg); color: var(--red-text); }
+    .status-sunat.active { border-color: var(--gray-text); }
+    .status-de_resunat.active { border-color: var(--orange-text); background: var(--orange-bg); color: var(--orange-text); }
+    .status-acceptat.active { border-color: var(--green-text); background: var(--green-bg); color: var(--green-text); }
+    .status-refuzat.active { border-color: var(--border2); background: var(--bg3); }
+    .inputs-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    input[type="date"], input[type="time"], textarea {
+      border-radius: 4px;
+      border: 0.5px solid var(--border2);
+      padding: 6px 8px;
+      font-size: 13px;
+      width: 100%;
+      font-family: inherit;
+      background: var(--bg2);
+    }
+    textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: auto;
+    }
+    .stat-card {
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 0.5px solid var(--border);
+      background: var(--bg2);
+      font-size: 11px;
+      color: var(--text2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stat-value {
+      font-weight: 500;
+      color: var(--text);
+      font-size: 13px;
+    }
+    .pill-key {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 0.5px solid var(--border2);
+      background: var(--bg3);
+      color: var(--text2);
+      font-size: 11px;
+      margin-right: 4px;
+      margin-bottom: 3px;
+    }
+    .text-muted { color: var(--text3); }
+    .text-red { color: var(--red-text); }
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 0.5px solid var(--border2);
+      font-size: 13px;
+      background: var(--green-bg);
+      color: var(--green-text);
+      max-width: 260px;
+      z-index: 20;
+    }
+    .toast.error {
+      background: var(--red-bg);
+      color: var(--red-text);
+    }
+    a {
+      color: var(--blue-text);
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="app-title">Leads CRM</div>
+      <div class="search-box">
+        <span style="font-size:12px;color:var(--text3);">Caută</span>
+        <input id="searchInput" type="text" placeholder="Nume sau domeniu..." />
+      </div>
+      <div class="nav">
+        <div class="nav-item" data-status="de_resunat">
+          <span>De re-sunat</span>
+          <span class="badge badge-orange" id="count_de_resunat">0</span>
+        </div>
+        <div class="nav-item" data-status="acceptat">
+          <span>Acceptați</span>
+          <span class="badge" id="count_acceptat">0</span>
+        </div>
+        <div class="nav-item" data-status="refuzat">
+          <span>Refuzați</span>
+          <span class="badge" id="count_refuzat">0</span>
+        </div>
+        <div class="nav-item" data-status="all">
+          <span>Toți clienții</span>
+          <span class="badge" id="count_total">0</span>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span>Total</span>
+          <span class="stat-value" id="stat_total">0</span>
+        </div>
+        <div class="stat-card">
+          <span>Acceptați</span>
+          <span class="stat-value" id="stat_acceptat">0</span>
+        </div>
+        <div class="stat-card">
+          <span>Re-sunat</span>
+          <span class="stat-value" id="stat_de_resunat">0</span>
+        </div>
+        <div class="stat-card">
+          <span>Refuzați</span>
+          <span class="stat-value" id="stat_refuzat">0</span>
+        </div>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="top-bar">
+        <div class="top-info">
+          <div class="company" id="companyName">Selectează un lead</div>
+          <div class="address" id="companyAddress">Nu există rezultate</div>
+          <div class="top-tags">
+            <div class="pill pill-blue" id="domainPill" style="display:none;"></div>
+            <div class="pill pill-orange" id="prioPill" style="display:none;"></div>
+          </div>
+        </div>
+        <div class="top-nav">
+          <button id="prevBtn">Anterior</button>
+          <button id="nextBtn">Următor</button>
+          <div class="pos-label" id="positionLabel">0 / 0</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-title">Contact</div>
+            <div class="field-row">
+              <div class="field-label">Telefon</div>
+              <div class="field-value" id="telefonField"></div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Locație</div>
+              <div class="field-value" id="locatieField"></div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Website</div>
+              <div class="field-value" id="websiteField"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Google Maps</div>
+            <div class="field-row">
+              <div class="field-label">Rating</div>
+              <div class="field-value" id="ratingField"></div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Număr recenzii</div>
+              <div class="field-value" id="recenziiField"></div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Link</div>
+              <div class="field-value" id="mapsField"></div>
+            </div>
+          </div>
+          <div class="card full">
+            <div class="card-title">Comentariu cold call</div>
+            <div class="field-value" id="comentariuField" style="white-space:pre-wrap;"></div>
+          </div>
+          <div class="card full">
+            <div class="card-title">Status</div>
+            <div class="status-buttons">
+              <button class="status-btn status-de_resunat" data-status="de_resunat">Re-sunat (1)</button>
+              <button class="status-btn status-acceptat" data-status="acceptat">Acceptat (2)</button>
+              <button class="status-btn status-refuzat" data-status="refuzat">Refuzat (3)</button>
+            </div>
+            <div id="resunatInputs" style="display:none;">
+              <div class="field-label">Detalii re-sunat</div>
+              <div class="inputs-row">
+                <input id="resunatDate" type="date" />
+                <input id="resunatTime" type="time" />
+              </div>
+            </div>
+            <div style="margin-top:8px;display:flex;justify-content:flex-end;gap:8px;">
+              <button id="saveStatusBtn">Save</button>
+            </div>
+          </div>
+          <div class="card full">
+            <div class="card-title">Notă personală</div>
+            <textarea id="notaTextarea" placeholder="Notează detalii utile pentru următoarea discuție..."></textarea>
+            <div style="margin-top:8px;display:flex;justify-content:flex-end;">
+              <button id="saveNotaBtn">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div id="toastContainer"></div>
+  <script>
+    const state = {
+      leads: [],
+      filteredLeads: [],
+      index: 0,
+      currentStatusFilter: 'all',
+      searchTerm: '',
+      isSaving: false
+    };
+
+    const els = {
+      companyName: document.getElementById('companyName'),
+      companyAddress: document.getElementById('companyAddress'),
+      domainPill: document.getElementById('domainPill'),
+      prioPill: document.getElementById('prioPill'),
+      telefonField: document.getElementById('telefonField'),
+      locatieField: document.getElementById('locatieField'),
+      websiteField: document.getElementById('websiteField'),
+      ratingField: document.getElementById('ratingField'),
+      recenziiField: document.getElementById('recenziiField'),
+      mapsField: document.getElementById('mapsField'),
+      comentariuField: document.getElementById('comentariuField'),
+      positionLabel: document.getElementById('positionLabel'),
+      prevBtn: document.getElementById('prevBtn'),
+      nextBtn: document.getElementById('nextBtn'),
+      searchInput: document.getElementById('searchInput'),
+      navItems: Array.from(document.querySelectorAll('.nav-item')),
+      statusButtons: Array.from(document.querySelectorAll('.status-btn')),
+      resunatInputs: document.getElementById('resunatInputs'),
+      resunatDate: document.getElementById('resunatDate'),
+      resunatTime: document.getElementById('resunatTime'),
+      saveStatusBtn: document.getElementById('saveStatusBtn'),
+      notaTextarea: document.getElementById('notaTextarea'),
+      saveNotaBtn: document.getElementById('saveNotaBtn'),
+      toastContainer: document.getElementById('toastContainer'),
+      counts: {
+        de_resunat: document.getElementById('count_de_resunat'),
+        acceptat: document.getElementById('count_acceptat'),
+        refuzat: document.getElementById('count_refuzat'),
+        total: document.getElementById('count_total')
+      },
+      stats: {
+        total: document.getElementById('stat_total'),
+        acceptat: document.getElementById('stat_acceptat'),
+        de_resunat: document.getElementById('stat_de_resunat'),
+        refuzat: document.getElementById('stat_refuzat')
+      }
+    };
+
+    function showToast(message, isError) {
+      const div = document.createElement('div');
+      div.className = 'toast' + (isError ? ' error' : '');
+      div.textContent = message;
+      els.toastContainer.appendChild(div);
+      setTimeout(() => {
+        div.remove();
+      }, 2500);
+    }
+
+    function renderCountsAndStats(stats) {
+      if (!stats) return;
+      els.stats.total.textContent = stats.total ?? 0;
+      els.stats.acceptat.textContent = stats.acceptat ?? 0;
+      els.stats.de_resunat.textContent = stats.de_resunat ?? 0;
+      els.stats.refuzat.textContent = stats.refuzat ?? 0;
+      els.counts.de_resunat.textContent = stats.de_resunat ?? 0;
+      els.counts.acceptat.textContent = stats.acceptat ?? 0;
+      els.counts.refuzat.textContent = stats.refuzat ?? 0;
+      els.counts.total.textContent = stats.total ?? 0;
+    }
+
+    function filterLeads() {
+      const term = state.searchTerm.trim().toLowerCase();
+      state.filteredLeads = state.leads.filter((lead) => {
+        if (state.currentStatusFilter !== 'all' && lead.status !== state.currentStatusFilter) {
+          return false;
+        }
+        if (!term) return true;
+        const name = (lead.nume_companie || '').toLowerCase();
+        const dom = (lead.domeniu || '').toLowerCase();
+        return name.includes(term) || dom.includes(term);
+      });
+      if (state.index >= state.filteredLeads.length) state.index = 0;
+      renderCurrentLead();
+    }
+
+    function setStatusActive(status) {
+      els.statusButtons.forEach((btn) => {
+        const s = btn.getAttribute('data-status');
+        btn.classList.toggle('active', s === status);
+      });
+      els.resunatInputs.style.display = status === 'de_resunat' ? 'block' : 'none';
+    }
+
+    function renderCurrentLead() {
+      const total = state.filteredLeads.length;
+      if (!total) {
+        els.companyName.textContent = 'Niciun lead';
+        els.companyAddress.textContent = 'Ajustează filtrul sau căutarea.';
+        els.domainPill.style.display = 'none';
+        els.prioPill.style.display = 'none';
+        els.telefonField.textContent = '-';
+        els.locatieField.textContent = '-';
+        els.websiteField.textContent = '-';
+        els.ratingField.textContent = '-';
+        els.recenziiField.textContent = '-';
+        els.mapsField.textContent = '-';
+        els.comentariuField.textContent = '-';
+        els.positionLabel.textContent = '0 / 0';
+        els.prevBtn.disabled = true;
+        els.nextBtn.disabled = true;
+        els.notaTextarea.value = '';
+        setStatusActive(null);
+        return;
+      }
+      const idx = Math.max(0, Math.min(state.index, total - 1));
+      state.index = idx;
+      const lead = state.filteredLeads[idx];
+
+      els.companyName.textContent = lead.nume_companie || 'Nume lipsă';
+      els.companyAddress.textContent = lead.locatie || 'Adresă necunoscută';
+
+      if (lead.domeniu) {
+        els.domainPill.style.display = 'inline-block';
+        els.domainPill.textContent = lead.domeniu;
+      } else {
+        els.domainPill.style.display = 'none';
+      }
+
+      if (lead.prioritate && Number(lead.prioritate) > 0) {
+        els.prioPill.style.display = 'inline-block';
+        els.prioPill.textContent = 'Prio ' + lead.prioritate;
+      } else {
+        els.prioPill.style.display = 'none';
+      }
+
+      if (!lead.telefon) {
+        els.telefonField.innerHTML = '<span class="text-red">Fără telefon</span>';
+      } else {
+        const tel = lead.telefon;
+        els.telefonField.innerHTML = '<a href="tel:' + encodeURIComponent(tel) + '">' + tel + '</a>';
+      }
+
+      els.locatieField.textContent = lead.locatie || '-';
+
+      if (lead.are_site === 'Nu' || !lead.website) {
+        els.websiteField.innerHTML = '<span class="text-red">Fără site 🔥</span>';
+      } else {
+        const url = lead.website;
+        els.websiteField.innerHTML = '<a href="' + url + '" target="_blank" rel="noreferrer">Deschide site</a>';
+      }
+
+      const rating = parseFloat(lead.rating || '0');
+      if (rating > 0) {
+        const stars = Math.round(Math.min(5, rating));
+        let s = '';
+        for (let i = 0; i < 5; i++) s += i < stars ? '★' : '☆';
+        els.ratingField.textContent = s + ' (' + rating.toFixed(1) + ')';
+      } else {
+        els.ratingField.textContent = 'Fără rating';
+      }
+
+      els.recenziiField.textContent = lead.numar_recenzii ? String(lead.numar_recenzii) : '0';
+
+      if (lead.google_maps_url) {
+        els.mapsField.innerHTML = '<a href="' + lead.google_maps_url + '" target="_blank" rel="noreferrer">Deschide în Google Maps</a>';
+      } else {
+        els.mapsField.textContent = '-';
+      }
+
+      els.comentariuField.innerHTML = decorateComentariu(lead.comentariu_cold_call || '');
+      els.positionLabel.textContent = (idx + 1) + ' / ' + total;
+      els.prevBtn.disabled = idx === 0;
+      els.nextBtn.disabled = idx === total - 1;
+
+      els.notaTextarea.value = lead.nota || '';
+      setStatusActive(lead.status);
+
+      if (lead.status === 'de_resunat') {
+        els.resunatDate.value = lead.resunat_data || '';
+        els.resunatTime.value = lead.resunat_ora || '';
+      } else {
+        els.resunatDate.value = '';
+        els.resunatTime.value = '';
+      }
+    }
+
+    function decorateComentariu(text) {
+      if (!text) return '<span class="text-muted">Fără comentariu</span>';
+      const parts = text.split(/(contact|decizie|obiecții|buget)/gi);
+      return parts.map((p, idx) => {
+        if (idx % 2 === 1) {
+          return '<span class="pill-key">' + p + '</span>';
+        }
+        return p.replace(/\n/g, '<br>');
+      }).join('');
+    }
+
+    async function fetchStats() {
+      try {
+        const res = await fetch('/api/stats');
+        if (!res.ok) throw new Error('Răspuns invalid');
+        const data = await res.json();
+        renderCountsAndStats(data);
+      } catch (e) {
+        showToast('Nu s-au putut încărca statisticile', true);
+      }
+    }
+
+    async function fetchLeads(initialStatus) {
+      const params = new URLSearchParams();
+      if (initialStatus && initialStatus !== 'all') params.set('status', initialStatus);
+      try {
+        const res = await fetch('/api/leads?' + params.toString());
+        if (!res.ok) throw new Error('Răspuns invalid');
+        const json = await res.json();
+        state.leads = json.items || [];
+        state.currentStatusFilter = initialStatus || 'all';
+        state.filteredLeads = state.leads.slice();
+        state.index = 0;
+        filterLeads();
+      } catch (e) {
+        showToast('Nu s-au putut încărca lead-urile', true);
+      }
+    }
+
+    function goto(delta) {
+      if (!state.filteredLeads.length) return;
+      const idx = state.index + delta;
+      if (idx < 0 || idx >= state.filteredLeads.length) return;
+      state.index = idx;
+      renderCurrentLead();
+    }
+
+    async function saveStatus(status) {
+      if (!state.filteredLeads.length || state.isSaving) return;
+      const lead = state.filteredLeads[state.index];
+      const body = { status };
+      if (status === 'de_resunat') {
+        body.resunat_data = els.resunatDate.value || null;
+        body.resunat_ora = els.resunatTime.value || null;
+      }
+      state.isSaving = true;
+      try {
+        const res = await fetch('/api/leads/' + lead.id + '/status', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Eroare la salvare');
+        const idxGlobal = state.leads.findIndex((l) => l.id === lead.id);
+        if (idxGlobal !== -1) state.leads[idxGlobal] = data;
+        state.filteredLeads[state.index] = data;
+        setStatusActive(data.status);
+        showToast('Status salvat ✓', false);
+        fetchStats();
+        setTimeout(() => {
+          goto(1);
+        }, 800);
+      } catch (e) {
+        showToast(e.message || 'Nu s-a putut salva statusul', true);
+      } finally {
+        state.isSaving = false;
+      }
+    }
+
+    async function saveNota() {
+      if (!state.filteredLeads.length) return;
+      const lead = state.filteredLeads[state.index];
+      const body = { nota: els.notaTextarea.value || null };
+      try {
+        const res = await fetch('/api/leads/' + lead.id + '/nota', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Eroare la salvare');
+        const idxGlobal = state.leads.findIndex((l) => l.id === lead.id);
+        if (idxGlobal !== -1) state.leads[idxGlobal] = data;
+        state.filteredLeads[state.index] = data;
+        showToast('Notă salvată ✓', false);
+      } catch (e) {
+        showToast(e.message || 'Nu s-a putut salva nota', true);
+      }
+    }
+
+    function initEvents() {
+      els.prevBtn.addEventListener('click', () => goto(-1));
+      els.nextBtn.addEventListener('click', () => goto(1));
+
+      let searchTimeout;
+      els.searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        state.searchTerm = els.searchInput.value;
+        searchTimeout = setTimeout(() => {
+          filterLeads();
+        }, 300);
+      });
+
+      els.navItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          els.navItems.forEach((i) => i.classList.remove('active'));
+          item.classList.add('active');
+          const status = item.getAttribute('data-status');
+          fetchLeads(status);
+        });
+      });
+      const defaultNav = els.navItems.find((i) => i.getAttribute('data-status') === 'all');
+      if (defaultNav) defaultNav.classList.add('active');
+
+      els.statusButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const s = btn.getAttribute('data-status');
+          setStatusActive(s);
+        });
+      });
+
+      els.saveStatusBtn.addEventListener('click', () => {
+        const active = els.statusButtons.find((b) => b.classList.contains('active'));
+        const s = active ? active.getAttribute('data-status') : null;
+        if (!s) return;
+        saveStatus(s);
+      });
+
+      els.saveNotaBtn.addEventListener('click', () => {
+        saveNota();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.target === els.searchInput || e.target === els.notaTextarea) return;
+        if (e.key === 'ArrowLeft') {
+          goto(-1);
+        } else if (e.key === 'ArrowRight') {
+          goto(1);
+        } else if (['1','2','3'].includes(e.key)) {
+          const map = {
+            '1': 'de_resunat',
+            '2': 'acceptat',
+            '3': 'refuzat'
+          };
+          const s = map[e.key];
+          setStatusActive(s);
+          saveStatus(s);
+        }
+      });
+    }
+
+    (function init() {
+      initEvents();
+      fetchStats();
+      fetchLeads('all');
+    })();
+  </script>
+</body>
+</html>

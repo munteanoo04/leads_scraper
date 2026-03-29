@@ -1,0 +1,10 @@
+node_modules/
+.env
+.vercel/
+npm-debug.log*
+
+# Local exports / data dumps
+*.xlsx
+*.csv
+chisinau_leads_*.json
+chisinau_leads_scraper.py
